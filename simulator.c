@@ -30,18 +30,6 @@ int allowedList(int argc, char const *argv[])
     return 0; 
 } 
 
-/*Will need to take car plate parameter to check if true of false
- * If car is in list call 
- * Check if there's space
- * If both conditions are turn
- * book gate to open 
- * and change display to show available spot*/
-void LPREntry() {
-	/*Select an empty parkign space */
-	
-	/*When car park ifs full put on display */
-
-}
 
 
 int bannedList(){      
@@ -58,16 +46,27 @@ int bannedList(){
 	} 
 }
 
-int main(){
-    printf(allowedList);
-    printf(bannedList);
+/*Will need to take car plate parameter to check if true of false
+ * If car is in list call 
+ * Check if there's space
+ * If both conditions are turn
+ * book gate to open 
+ * and change display to show available spot*/
+void LPREntry() {
+	/*Select an empty parkign space */
+	
+	/*When car park ifs full put on display */
+
 }
 
 
+void LPRExit() {
+	/*Check time car has been there*/
+	/*Calculate */
+	/*Call function to write to bill.txt */
+}
 
-void createCarList(int n);
-int countCars();
-void displayCarList();
+
 
 car_t* generatecar() {
     car_t* car = malloc(sizeof(car_t));
@@ -163,6 +162,11 @@ void freecar(car_t* carptr) {
 int countCars()
 {
     
+}
+
+int main(){
+    printf(allowedList);
+    printf(bannedList);
 }
 
 
