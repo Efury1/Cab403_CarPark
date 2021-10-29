@@ -1,16 +1,54 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <fcntl.h>
+//calling in the .h file 
+#include "carparkSim.h"
 
-/* ----------------------
-* Car Park simulator 
-*
-*---------------------------*/
+//call the plates.txt and put in array
+//genarate 30 banned plates and put in array
+
+int allowedList(int argc, char const *argv[]) 
+{ 
+    FILE* inp; 
+    inp = fopen("plates.txt","r");		//filename of your data file 
+    char arr[100][7];			//max word length 50 
+    int i = 0; 
+    while(1){ 
+        char r = (char)fgetc(inp); 
+        int k = 0; 
+        while(r!=',' && !feof(inp)){	//read till , or EOF 
+            arr[i][k++] = r;			//store in array 
+            r = (char)fgetc(inp); 
+        } 
+        arr[i][k]=0;		//make last character of string null  
+        if(feof(inp)){		//check again for EOF 
+            break; 
+        } 
+        i++; 
+    } 
+    int j; 
+    for(j = 0;j<=i;j++){ 
+        printf("%s\n",arr[j] );	//print array 
+    } 
+    return 0; 
+} 
+
+
+int bannedList(){      
+    int i=0;
+    char plates[30][7];//declaration of array       
+    for(int x; x < 30; x++) {
+        char plate[7];
+        for(int i = 0; i < 3; i++) {
+            plate[i] = (char)(48 + (rand() % 10));
+            plate[i+3] =  (char)(65 + (rand() % 26));
+            plate[6] = '\0';
+        }
+        strcpy(plates[x], plate);
+	} 
+}
+
+int main(){
+    printf(allowedList);
+    printf(bannedList);
+}
 
 
 
