@@ -5,8 +5,7 @@
 1-5 levels
 20 spaces per level
 
-**
-Entry**
+**Entry**
 Cars queue up at one of 5 entrances. 
 When at front of queue license plate is read by LPR. 
 
@@ -31,3 +30,8 @@ When at front of queue license plate is read by LPR.
 - Then queues up
 **Simulator needs to generate a random length of time and put into struct**
 - Car parks for 100-10000ms
+
+**Shared memory**
+-Processes communicate via a shared memory segment named PARKING (ALL CAPS)
+-Segment is created when first created
+-Segment contains sapce for 5 parking lot entrances, 5 exits and 5 levles
