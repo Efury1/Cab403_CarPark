@@ -330,7 +330,6 @@ int main()
 	//Make pthreads
 	
 	//Print display
-    
 //}
 
 /*
