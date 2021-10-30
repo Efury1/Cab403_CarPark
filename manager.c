@@ -302,7 +302,7 @@ void printMonolith(displayMonolith *monolith) {
 	char *headerLower = headerLowerDraw();
     displaySlice blankSlice = {6};
 
-	char *returnString = malloc(sizeof(char) * 4 * 100 * 24);;
+	char *returnString = malloc(sizeof(char) * 4 * 100 * 24);
     char *slice;
 
 
@@ -326,7 +326,8 @@ void printMonolith(displayMonolith *monolith) {
 
     system("clear");
     printf("%s", returnString);
-	free(returnString);
+    printf("\n %p \n", (void *)&returnString);
+	//free(returnString);  // not needed apparently
     
     clock_gettime(CLOCK_MONOTONIC, &spec);
 	
@@ -401,8 +402,8 @@ int main()
     while(true) {
         for (size_t i = 0; i < 5; i++)
         {
-            (&(&(&monolith)->level[i])->entrance)->sign = "ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 72];
-            (&(&(&monolith)->level[i])->exit)->sign = "ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 72];
+            (&(&(&monolith)->level[i])->entrance)->sign = "                            ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 100];
+            (&(&(&monolith)->level[i])->exit)->sign = "                            ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 100];
         }
 
         
