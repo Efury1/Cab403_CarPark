@@ -279,7 +279,7 @@ void printMonolith(displayMonolith *monolith) {
 	nanosleep((const struct timespec[]){{0, 200000000L}}, NULL); //0
 }
 
-int64_t timespecDiff(struct timespec *time_a, struct timespec *time_b)
+int timespecDiff(struct timespec *time_a, struct timespec *time_b)
 {
   return (((time_a->tv_sec * 1000000000) + time_a->tv_nsec) -
            ((time_b->tv_sec * 1000000000) + time_b->tv_nsec) ) / 1e6;
@@ -291,7 +291,6 @@ void *makeCar(carPark *parking, char plate[6], int level) {
         printf("Failed to allocate.\n");
     }
     car *newCar = malloc(sizeof(car));
-    struct timespec end_test;
     strcpy((newCar->plate), plate);
     newCar->level = level;
     clock_gettime(CLOCK_MONOTONIC, &(newCar->entryTime));
@@ -303,10 +302,21 @@ void *makeCar(carPark *parking, char plate[6], int level) {
         p->next = parking->list;
         parking->list = p;
     }
-    sleep(1);
+}
+
+void charge (car *carToCharge) {
+
+    struct timespec end_test;
+    char *toPrint;
+    int dollars;
+    int cents;
     clock_gettime(CLOCK_MONOTONIC, &end_test);
-    uint64_t timeElapsed = timespecDiff(&end_test, &(newCar->entryTime));
-    printf("%" PRIu64 "\n", timeElapsed);
+    int timeElapsed = timespecDiff(&end_test, &(carToCharge->entryTime));
+    dollars = ((int)(timeElapsed*0.5))/100;
+    cents = ((int)(timeElapsed*0.5)) % 100;
+    FILE *fileBill = fopen("billing.txt", "a");
+    fprintf(fileBill, "%s: $%d.%d\n", carToCharge->plate, dollars, cents);
+    fclose(fileBill);
 }
 /*
 carHolder *insertNode(carHolder *head, char plate[6], int level) {
@@ -425,8 +435,14 @@ void simulator (void) {
     char *plate2 = "abb037";
     makeCar(parking, plate, 2);
     makeCar(parking, plate2, 2);
-    printf("\n%s\n", parking->list->node->plate);
-    printf("\n%s\n", parking->list->next->node->plate);
+    //printf("\n%s\n", parking->list->node->plate);
+    //printf("\n%s\n", parking->list->next->node->plate);
+
+    while(true) {
+        sleep(2);
+        charge(parking->list->node);
+
+    }
 
 }
 
@@ -446,6 +462,8 @@ int main()
     testFunction(&monolith);
     
 
+    simulator();
+
     while(true) {
         for (size_t i = 0; i < 5; i++)
         {
@@ -458,7 +476,6 @@ int main()
             (&(&(&monolith)->level[i])->entrance)->valid = random() % 2;
             (&(&(&monolith)->level[i])->exit)->valid = random() % 2;
         }
-        simulator();
         //printf("%c", (&(&(&monolith)->level[0])->entrance)->boom);
         //printMonolith(&monolith);
     }
