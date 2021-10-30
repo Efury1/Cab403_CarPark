@@ -19,7 +19,7 @@
 #include <stdbool.h>
 
 //calling in the .h file 
-/*#include "car_park.h"*/
+#include "carparkSim.h"
 
 //defines to make the project flexible
 #define LEVELS 5
@@ -28,103 +28,7 @@
 #define CARSPERLEVEL 20
 
 
-static const char white_text[] = "\033[37m"; // White Text
-static const char black_text[] = "\033[30m";  // Black Text
-static const char white_background[] = "\033[47m"; // White Background
-static const char black_background[] = "\033[40m";  // Black Background
-static const char reset_colour[] = "\033[0m";  // Reset
 
-const char *spinnerStrings[] = {"⠀⡰","⢀⡠","⢄⡀", "⢆⠀", "⠎⠀", "⠊⠁", "⠈⠑", "⠀⠱"};
-
-void polarity(int isPositive) {
-    if(isPositive) {
-        printf("%s%s", white_background, black_text);
-    } else {
-        printf("%s%s", black_background, white_text);
-    }
-}
-
-void manageTest(double ns1) {
-	long ns;
-	struct timespec spec;
-	clock_gettime(CLOCK_MONOTONIC, &spec);
-	ns = spec.tv_nsec;
-	
-	
-
-
-
-	clock_gettime(CLOCK_MONOTONIC, &spec);
-	
-	ns = abs(floor((spec.tv_nsec - ns) / 1.0e6));
-	if (ns > 500) {
-		ns = 1000-ns;
-	}
-	printf(" internal time: %3ld milliseconds\n", ns);
-	printf(" external time: %3f milliseconds\n", ns1);
-	
-	nanosleep((const struct timespec[]){{0, 20000000L}}, NULL);
-}
-
-void spinner(void) {
-    system("clear");
-    polarity(1);
-    printf("%-07s%-97s\n", spinnerStrings[0], "Loading...");
-    return;
-}
-
-typedef struct {
-	char* plate;
-	bool valid;
-	bool boom;
-	char sign;
-    char signHistory[5];
-} entrexitSlice;
-
-typedef struct {
-	int entry;
-	double temp;
-	int cars;
-	int capacity;
-	entrexitSlice entrance;
-	entrexitSlice exit;
-} displaySlice;
-
-typedef struct {
-    int dollars;
-    int cents;
-    displaySlice level[6];
-} displayMonolith;
-
-char* boolFormat(bool value) {
-	char *returnString;
-	if(value) {
-		returnString = "⣀⠤⠒⠉ ";
-	} else {
-		returnString = "⣀⣀⣀⣀ ";
-	}
-	return returnString;
-};
-
-char* boomFormat(bool value) {
-	char *returnString;
-	if(value) {
-		returnString = "Yes";
-	} else {
-		returnString = "No ";
-	}
-	return returnString;
-};
-
-char *headerDraw(void) {
-	return("\n  level data                  entrances                          exits\n"
-	" ┌╼#╾┬─╼Temp╾─┬─╼Parking╾─┐  ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┬─╼Valid╾─┐ ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┬─╼Valid╾─┐\n");
-}
-
-char *headerLowerDraw(void) {
-	return("\n  revenue                     entrance signs                     exit signs\n"
-	" ┌╼$╾────────────┐           ┌╼#╾┬───┬─╼History╾─┐              ┌╼#╾┬───┬─╼History╾─┐\n");
-}
 
 void shuffleSignData(entrexitSlice* entry) {
     for (int i = 3; i >= 0; i--)
