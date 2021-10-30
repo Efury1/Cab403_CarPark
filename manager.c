@@ -89,9 +89,9 @@ char* boolFormat(bool value) {
 char* boomFormat(bool value) {
 	char *returnString;
 	if(value) {
-		returnString = "Yes";
+		returnString = "\x1B[32mYes\x1B[0m";
 	} else {
-		returnString = "No ";
+		returnString = "\x1B[31mNo\x1B[0m ";
 	}
 	return returnString;
 };
@@ -103,11 +103,11 @@ char *headerDraw(void) {
 
 char *headerLowerDraw(void) {
 	return("\n  revenue                     entrance signs                     exit signs\n"
-	" ┌╼$╾────────────┐           ┌╼#╾┬───┬─╼History╾─┐              ┌╼#╾┬───┬─╼History╾─┐\n");
+	" ┌╼$╾────────────┐           ┌╼#╾┬╼*╾┬───╼History╾───┐          ┌╼#╾┬╼*╾┬───╼History╾───┐\n");
 }
 
 void shuffleSignData(entrexitSlice* entry) {
-    for (int i = 3; i >= 0; i--)
+    for (int i = 5; i >= 0; i--)
     {
         //printf("%d: %c -> %d: %c\n", i, entry->signHistory[i], i+1, entry->signHistory[i+1]); 
         entry->signHistory[i+1] = entry->signHistory[i];
@@ -119,12 +119,13 @@ void shuffleSignData(entrexitSlice* entry) {
 char *signData(int entryNum, entrexitSlice* entry, int type) {
 	char *returnString = malloc(120);;
 	if(type == 1) {
-		snprintf(returnString, 120, "           └───┴───┴───────────┘");
+		snprintf(returnString, 120, "      └───┴───┴───────────────┘");
 	} else if (type == 2) {
-		snprintf(returnString, 120, "                                     ");
+		snprintf(returnString, 120, "                               ");
 	} else {
-        snprintf(returnString, 120, "           │ %d │ %c │ %c %c %c %c %c │", entryNum, entry->sign, entry->signHistory[0], 
-            entry->signHistory[1], entry->signHistory[2], entry->signHistory[3], entry->signHistory[4]);
+        snprintf(returnString, 120, "      │ %d │ \x1B[37;1m%c\x1B[0m │ %c %c %c %c %c %c %c │", entryNum, entry->sign, entry->signHistory[0], 
+            entry->signHistory[1], entry->signHistory[2], entry->signHistory[3], entry->signHistory[4], 
+            entry->signHistory[5], entry->signHistory[6]);
         shuffleSignData(entry);
     }
 	return(returnString);
@@ -228,7 +229,7 @@ char *printLowerSlice(displayMonolith* monolith, int level) {
 	char *entryData = signData(monolith->level[level].entry, &(&(monolith->level)[level])->entrance, entrymode);
 	char *exitData = signData(monolith->level[level].entry, &(&(monolith->level)[level])->exit, exitmode);
     char *moneyData = revenueData(monolith->dollars, monolith->cents, revenuemode);
-	snprintf(returnString, 320, "%s%s   %s\n", moneyData, entryData, exitData);
+	snprintf(returnString, 320, "%s     %s    %s\n", moneyData, entryData, exitData);
 
 	return returnString;
 
@@ -301,28 +302,44 @@ void printMonolith(displayMonolith *monolith) {
 	char *headerLower = headerLowerDraw();
     displaySlice blankSlice = {6};
 
+	char *returnString = malloc(sizeof(char) * 4 * 100 * 24);;
+    char *slice;
 
-    system("clear");
-	printf("%s", header);
+
+    strcat(returnString, header);
+
     for (size_t i = 0; i < LEVELS + 1; i++)
     {
-        printf("%s", printSlice(monolith->level[i]));
+        slice = printSlice(monolith->level[i]);
+        strcat(returnString, slice);
+        free(slice);
     }
     
-	printf("%s", headerLower);
+    strcat(returnString, headerLower);
+    
     for (size_t i = 0; i < fmax(ENTRANCES, EXITS) + 1; i++)
     {
-        printf("%s", printLowerSlice(monolith, i));
+        slice = printLowerSlice(monolith, i);
+        strcat(returnString, slice);
+        free(slice);
     }
-	clock_gettime(CLOCK_MONOTONIC, &spec);
+
+    system("clear");
+    printf("%s", returnString);
+	free(returnString);
+    
+    clock_gettime(CLOCK_MONOTONIC, &spec);
 	
 	ns = abs(floor((spec.tv_nsec - ns) / 1.0e6));
 	if (ns > 500) {
 		ns = 1000-ns;
 	}
 	printf("\n internal time: %3ld milliseconds\n", ns);
-	nanosleep((const struct timespec[]){{0, 200000000L}}, NULL);
+	nanosleep((const struct timespec[]){{0, 20000000L}}, NULL);
 }
+
+
+
 
 int allowedList(int argc, char const *argv[]) 
 { 
@@ -368,8 +385,8 @@ int bannedList(){
 
 int main()
 {
-    entrexitSlice entery = {"XXX-000", false, true, 'H', {' ', ' ', ' ', ' ', ' '}};
-    entrexitSlice exity = {"000-000", true, false, 'H', {' ', ' ', ' ', ' ', ' '}};
+    entrexitSlice entery = {"XXX-000", false, true, 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
+    entrexitSlice exity = {"000-000", true, false, 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
     displaySlice level1 = {1, 0.5, 16, 20, entery, exity};
     displaySlice level2 = {2, 0.5, 16, 20, entery, exity};
     displaySlice level3 = {3, 0.5, 16, 20, entery, exity};

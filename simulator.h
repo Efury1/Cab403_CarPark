@@ -39,7 +39,7 @@ typedef struct {
 	bool valid;
 	bool boom;
 	char sign;
-    char signHistory[5];
+    char signHistory[7];
 } entrexitSlice;
 
 typedef struct {
