@@ -8,7 +8,7 @@
 #include <fcntl.h>
 
 int shm_fd;
-volatile void *shm;
+void *shm;
 
 int alarm_active = 0;
 pthread_mutex_t alarm_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -147,7 +147,7 @@ void *openboomgate(void *arg)
 int main()
 {
 	shm_fd = shm_open("PARKING", O_RDWR, 0);
-	shm = (volatile void *) mmap(0, 2920, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+	shm = ( void *) mmap(0, 2920, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	
 	pthread_t *threads = malloc(sizeof(pthread_t) * LEVELS);
 	
@@ -176,12 +176,12 @@ int main()
 	pthread_t *boomgatethreads = malloc(sizeof(pthread_t) * (ENTRANCES + EXITS));
 	for (int i = 0; i < ENTRANCES; i++) {
 		int addr = 288 * i + 96;
-		volatile struct boomgate *bg = shm + addr;
+		 struct boomgate *bg = shm + addr;
 		pthread_create(boomgatethreads + i, NULL, openboomgate, &bg);
 	}
 	for (int i = 0; i < EXITS; i++) {
 		int addr = 192 * i + 1536;
-		volatile struct boomgate *bg = shm + addr;
+		 struct boomgate *bg = shm + addr;
 		pthread_create(boomgatethreads + ENTRANCES + i, NULL, openboomgate, &bg);
 	}
 	
@@ -191,7 +191,7 @@ int main()
 		for (char *p = evacmessage; *p != '\0'; p++) {
 			for (int i = 0; i < ENTRANCES; i++) {
 				int addr = 288 * i + 192;
-				volatile struct parkingsign *sign = shm + addr;
+				 struct parkingsign *sign = shm + addr;
 				pthread_mutex_lock(&sign->m);
 				sign->display = *p;
 				pthread_cond_broadcast(&sign->c);
