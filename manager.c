@@ -27,13 +27,46 @@
 #define ENTRANCES 5
 #define EXITS 5
 #define CARSPERLEVEL 20
-
+#define MAX 100
 
 static const char white_text[] = "\033[37m"; // White Text
 static const char black_text[] = "\033[30m";  // Black Text
 static const char white_background[] = "\033[47m"; // White Background
 static const char black_background[] = "\033[40m";  // Black Background
 static const char reset_colour[] = "\033[0m";  // Reset
+
+int intArray[MAX];
+int front = 0;
+int rear = -1;
+int itemCount = 0;
+
+int peek() {
+	return intArray[front];
+}
+
+bool isEmpty() {
+	return itemCount == 0;
+}
+
+bool isFull() {
+	return itemCount = MAX;
+
+}
+
+int size() {
+	return itemCount;
+}
+
+void insert(int data) {
+	if(!isFull()) {
+		if(rear == MAX-1) {
+			rear = -1;
+		}
+		intArray[++rear] = data;
+		itemCount++;
+	}
+
+}
 
 const char *spinnerStrings[] = {"⠀⡰","⢀⡠","⢄⡀", "⢆⠀", "⠎⠀", "⠊⠁", "⠈⠑", "⠀⠱"};
 
@@ -102,6 +135,11 @@ char *headerDraw(void) {
 }
 
 char *headerLowerDraw(void) {
+	return("\n  revenue                     entrance signs                     exit signs\n"
+	" ┌╼$╾────────────┐           ┌╼#╾┬───┬─╼History╾─┐              ┌╼#╾┬───┬─╼History╾─┐\n");
+}
+
+char *headerQuit(void) {
 	return("\n  revenue                     entrance signs                     exit signs\n"
 	" ┌╼$╾────────────┐           ┌╼#╾┬───┬─╼History╾─┐              ┌╼#╾┬───┬─╼History╾─┐\n");
 }
@@ -368,6 +406,8 @@ int bannedList(){
 
 int main()
 {
+	printf("Element at front: ");
+    insert(5);
     entrexitSlice entery = {"XXX-000", false, true, 'H', {' ', ' ', ' ', ' ', ' '}};
     entrexitSlice exity = {"000-000", true, true, 'H', {' ', ' ', ' ', ' ', ' '}};
     displaySlice level1 = {1, 0.5, 16, 20, entery, exity};
@@ -376,12 +416,14 @@ int main()
     displaySlice level4 = {4, 0.5, 16, 20, entery, exity};
     displaySlice level5 = {5, 0.5, 16, 20, entery, exity};
     displaySlice blanker = {6};
-    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}};
+    di
+    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}}; /*Prints dollars and sense  */
 
     while(true) {
         printMonolith(&monolith);
     }
-
+    
+    
 /*
     system("clear");
 	printf("%s", header);
@@ -395,9 +437,7 @@ int main()
         puts(string);
         free(string);
     }*/
-
-    return 0;
-
+    
 
 }
 
