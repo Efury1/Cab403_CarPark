@@ -527,7 +527,7 @@ void simulator (void) {
     printf("%s\n", genarateRandomLicense());
     printf("%s\n", genarateRandomLicense());
     deleteCar(parking, parking->list->next->next);
-    while(true) {
+    for (int i = 0; i < 3; i++) {
         sleep(2);
         charge(parking->list->node);
 
