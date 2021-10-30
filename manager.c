@@ -320,19 +320,32 @@ void charge (car *carToCharge) {
 }
 
 bool checkIfInFile (car *carToCheck) {
-    char plate[7];
+    char plate[8];
     FILE *filePlates = fopen("plates.txt", "r");
     //printf("File Opened.\n\n");
     if (filePlates == NULL) {
         return false;
     }
 
-    while(fgets(plate, 7, filePlates) != NULL) {
-        printf("%s\n", plate);
+    while(fgets(plate, 8, filePlates) != NULL) {
+        //printf("%s\n", plate);
+        for (size_t i = 0; i < 6; i++)
+        {
+            //printf("%d\n", i);
+            if(carToCheck->plate[i] != plate[i]) {
+                i = 7;
+            }
+            if(i == 5) {
+                //printf("match\n");
+                fclose(filePlates);
+                return true;
+            }
+        }
+        
     }
-    printf("File Closed.\n\n");
+    printf("File Closed.\n");
+    return false;
 
-    fclose(filePlates);
 }
 
 /*
