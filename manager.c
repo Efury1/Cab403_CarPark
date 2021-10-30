@@ -312,12 +312,29 @@ void charge (car *carToCharge) {
     int cents;
     clock_gettime(CLOCK_MONOTONIC, &end_test);
     int timeElapsed = timespecDiff(&end_test, &(carToCharge->entryTime));
-    dollars = ((int)(timeElapsed*0.5))/100;
-    cents = ((int)(timeElapsed*0.5)) % 100;
+    dollars = (int)((timeElapsed*0.05)/100);
+    cents = (int)fmod((timeElapsed*0.05), 100);
     FILE *fileBill = fopen("billing.txt", "a");
     fprintf(fileBill, "%s: $%d.%d\n", carToCharge->plate, dollars, cents);
     fclose(fileBill);
 }
+
+bool checkIfInFile (car *carToCheck) {
+    char plate[7];
+    FILE *filePlates = fopen("plates.txt", "r");
+    //printf("File Opened.\n\n");
+    if (filePlates == NULL) {
+        return false;
+    }
+
+    while(fgets(plate, 7, filePlates) != NULL) {
+        printf("%s\n", plate);
+    }
+    printf("File Closed.\n\n");
+
+    fclose(filePlates);
+}
+
 /*
 carHolder *insertNode(carHolder *head, char plate[6], int level) {
     carHolder *p = makeCar(plate, level);
@@ -437,6 +454,7 @@ void simulator (void) {
     makeCar(parking, plate2, 2);
     //printf("\n%s\n", parking->list->node->plate);
     //printf("\n%s\n", parking->list->next->node->plate);
+    checkIfInFile(parking->list->node);
 
     while(true) {
         sleep(2);
