@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <time.h>
 #include <pthread.h>
 #include <sys/mman.h>
@@ -9,6 +10,9 @@
 
 int shm_fd;
 void *shm;
+
+char test[50] = "Hello";
+
 
 int alarm_active = 0;
 pthread_mutex_t alarm_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -30,6 +34,7 @@ struct parkingsign {
 	pthread_mutex_t m;
 	pthread_cond_t c;
 	char display;
+	
 };
 
 struct tempnode {
@@ -41,6 +46,7 @@ struct tempnode *deletenodes(struct tempnode *templist, int after)
 {
 	if (templist->next) {
 		templist->next = deletenodes(templist->next, after - 1);
+		
 	}
 	if (after <= 0) {
 		free(templist);
@@ -60,14 +66,17 @@ void tempmonitor(int level)
 	
 	for (;;) {
 		// Calculate address of temperature sensor
+
 		addr = 0150 * level + 2496;
+
 		temp = *((int16_t *)(shm + addr));
-		
+
 		// Add temperature to beginning of linked list
 		newtemp = malloc(sizeof(struct tempnode));
 		newtemp->temperature = temp;
 		newtemp->next = templist;
 		templist = newtemp;
+		
 		
 		// Delete nodes after 5th
 		deletenodes(templist, MEDIAN_WINDOW);
@@ -76,7 +85,10 @@ void tempmonitor(int level)
 		count = 0;
 		for (struct tempnode *t = templist; t != NULL; t = t->next) {
 			count++;
+			
+
 		}
+		
 		
 		if (count == MEDIAN_WINDOW) { // Temperatures are only counted once we have 5 samples
 			int *sorttemp = malloc(sizeof(int) * MEDIAN_WINDOW);
@@ -101,11 +113,13 @@ void tempmonitor(int level)
 			hightemps = 0;
 			
 			for (struct tempnode *t = medianlist; t != NULL; t = t->next) {
+				
 				// Temperatures of 58 degrees and higher are a concern
 				if (t->temperature >= 58) hightemps++;
 				// Store the oldest temperature for rate-of-rise detection
 				oldesttemp = t;
 				count++;
+			
 			}
 			
 			if (count == TEMPCHANGE_WINDOW) {
@@ -120,6 +134,8 @@ void tempmonitor(int level)
 				if (templist->temperature - oldesttemp->temperature >= 8)
 					alarm_active = 1;
 			}
+			free(newtemp);
+			free(sorttemp);
 		}
 		
 		usleep(2000);
@@ -129,11 +145,12 @@ void tempmonitor(int level)
 
 void *openboomgate(void *arg)
 {
+	
 	struct boomgate *bg = arg;
 	pthread_mutex_lock(&bg->m);
 	for (;;) {
 		if (bg->s == 'C') {
-			bg->s = 'R';
+			bg->s == 'R';
 			pthread_cond_broadcast(&bg->c);
 		}
 		if (bg->s == 'O') {
@@ -146,6 +163,7 @@ void *openboomgate(void *arg)
 
 int main()
 {
+	
 	shm_fd = shm_open("PARKING", O_RDWR, 0);
 	shm = ( void *) mmap(0, 2920, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
 	
@@ -205,6 +223,9 @@ int main()
 		pthread_join(threads[i], NULL);
 	}
 	
+
 	munmap((void *)shm, 2920);
 	close(shm_fd);
+	free(threads);
+	free(boomgatethreads);
 }
