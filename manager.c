@@ -17,10 +17,11 @@
 #include <fcntl.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 //calling in the .h file 
 /*#include "car_park.h"*/
-
+#include "simulator.h"
 //defines to make the project flexible
 #define LEVELS 5
 #define ENTRANCES 5
@@ -73,28 +74,7 @@ void spinner(void) {
     return;
 }
 
-typedef struct {
-	char* plate;
-	bool valid;
-	bool boom;
-	char sign;
-    char signHistory[5];
-} entrexitSlice;
 
-typedef struct {
-	int entry;
-	double temp;
-	int cars;
-	int capacity;
-	entrexitSlice entrance;
-	entrexitSlice exit;
-} displaySlice;
-
-typedef struct {
-    int dollars;
-    int cents;
-    displaySlice level[6];
-} displayMonolith;
 
 char* boolFormat(bool value) {
 	char *returnString;
@@ -342,6 +322,48 @@ void printMonolith(displayMonolith *monolith) {
 	}
 	printf("\n internal time: %3ld milliseconds\n", ns);
 	nanosleep((const struct timespec[]){{0, 20000000L}}, NULL);
+}
+
+int allowedList(int argc, char const *argv[]) 
+{ 
+    FILE* inp; 
+    inp = fopen("plates.txt","r");		//filename of your data file 
+    char arr[100][7];			//max word length 50 
+    int i = 0; 
+    while(1){ 
+        char r = (char)fgetc(inp); 
+        int k = 0; 
+        while(r!=',' && !feof(inp)){	//read till , or EOF 
+            arr[i][k++] = r;			//store in array 
+            r = (char)fgetc(inp); 
+        } 
+        arr[i][k]=0;		//make last character of string null  
+        if(feof(inp)){		//check again for EOF 
+            break; 
+        } 
+        i++; 
+    } 
+    int j; 
+    for(j = 0;j<=i;j++){ 
+        printf("%s\n",arr[j] );	//print array 
+    } 
+    return 0; 
+} 
+
+
+
+int bannedList(){      
+    int i=0;
+    char plates[30][7];//declaration of array       
+    for(int x; x < 30; x++) {
+        char plate[7];
+        for(int i = 0; i < 3; i++) {
+            plate[i] = (char)(48 + (rand() % 10));
+            plate[i+3] =  (char)(65 + (rand() % 26));
+            plate[6] = '\0';
+        }
+        strcpy(plates[x], plate);
+	} 
 }
 
 int main()
