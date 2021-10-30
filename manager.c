@@ -321,7 +321,7 @@ void printMonolith(displayMonolith *monolith) {
 		ns = 1000-ns;
 	}
 	printf("\n internal time: %3ld milliseconds\n", ns);
-	nanosleep((const struct timespec[]){{0, 20000000L}}, NULL);
+	nanosleep((const struct timespec[]){{0, 200000000L}}, NULL);
 }
 
 int allowedList(int argc, char const *argv[]) 
@@ -369,7 +369,7 @@ int bannedList(){
 int main()
 {
     entrexitSlice entery = {"XXX-000", false, true, 'H', {' ', ' ', ' ', ' ', ' '}};
-    entrexitSlice exity = {"000-000", true, true, 'H', {' ', ' ', ' ', ' ', ' '}};
+    entrexitSlice exity = {"000-000", true, false, 'H', {' ', ' ', ' ', ' ', ' '}};
     displaySlice level1 = {1, 0.5, 16, 20, entery, exity};
     displaySlice level2 = {2, 0.5, 16, 20, entery, exity};
     displaySlice level3 = {3, 0.5, 16, 20, entery, exity};
@@ -378,7 +378,17 @@ int main()
     displaySlice blanker = {6};
     displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}};
 
+    (&(&(&monolith)->level[0])->entrance)->plate = "AAA-AAA";
+    
+
     while(true) {
+        for (size_t i = 0; i < 5; i++)
+        {
+            (&(&(&monolith)->level[i])->entrance)->sign = "ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 72];
+            (&(&(&monolith)->level[i])->exit)->sign = "ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 72];
+        }
+
+        
         printMonolith(&monolith);
     }
 
