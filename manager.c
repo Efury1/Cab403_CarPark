@@ -45,28 +45,6 @@ void polarity(int isPositive) {
     }
 }
 
-void manageTest(double ns1) {
-	long ns;
-	struct timespec spec;
-	clock_gettime(CLOCK_MONOTONIC, &spec);
-	ns = spec.tv_nsec;
-	
-	
-
-
-
-	clock_gettime(CLOCK_MONOTONIC, &spec);
-	
-	ns = abs(floor((spec.tv_nsec - ns) / 1.0e6));
-	if (ns > 500) {
-		ns = 1000-ns;
-	}
-	printf(" internal time: %3ld milliseconds\n", ns);
-	printf(" external time: %3f milliseconds\n", ns1);
-	
-	nanosleep((const struct timespec[]){{0, 20000000L}}, NULL);
-}
-
 void spinner(void) {
     system("clear");
     polarity(1);
@@ -74,36 +52,42 @@ void spinner(void) {
     return;
 }
 
-
-
 char* boolFormat(bool value) {
 	char *returnString;
 	if(value) {
-		returnString = "⣀⠤⠒⠉ ";
+		returnString = "\x1B[32mYes Y\x1B[0m ";
 	} else {
-		returnString = "⣀⣀⣀⣀ ";
-	}
+		returnString = "\x1B[31mNo  X\x1B[0m ";
+    }
 	return returnString;
 };
 
-char* boomFormat(bool value) {
+char* boomFormat(char value) {
 	char *returnString;
-	if(value) {
-		returnString = "\x1B[32mYes\x1B[0m";
-	} else {
-		returnString = "\x1B[31mNo\x1B[0m ";
-	}
+
+    if(value == 'C') {
+        returnString = "C \x1B[31m⠤⠤\x1B[0m ";
+    } else if(value == 'O') {
+        returnString = "O \x1B[32m⡠⠊\x1B[0m ";
+    } else if(value == 'L') {
+        returnString = "L \x1B[33m⠤⠒\x1B[0m ";
+    } else if(value == 'R') {
+        returnString = "R \x1B[33m⠤⠒\x1B[0m ";
+    } else {
+        returnString = "     ";
+    }
+    //printf("%c : %s\n", value, returnString);
 	return returnString;
 };
 
 char *headerDraw(void) {
-	return("\n  level data                  entrances                          exits\n"
-	" ┌╼#╾┬─╼Temp╾─┬─╼Parking╾─┐  ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┬─╼Valid╾─┐ ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┬─╼Valid╾─┐\n");
+	return("\n      level data                  entrances                           exits\n"
+	"     ┌╼#╾┬─╼Temp╾─┬─╼Parking╾─┐  ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┬─╼Valid╾─┐  ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┐\n");
 }
 
 char *headerLowerDraw(void) {
-	return("\n  revenue                     entrance signs                     exit signs\n"
-	" ┌╼$╾────────────┐           ┌╼#╾┬╼*╾┬───╼History╾───┐          ┌╼#╾┬╼*╾┬───╼History╾───┐\n");
+	return("\n      revenue                     entrance signs                      exit signs\n"
+	"     ┌╼$╾────────────┐           ┌╼#╾╼*╾┬───╼History╾───┐            ┌╼#╾╼*╾┬───╼History╾───┐\n");
 }
 
 void shuffleSignData(entrexitSlice* entry) {
@@ -119,11 +103,11 @@ void shuffleSignData(entrexitSlice* entry) {
 char *signData(int entryNum, entrexitSlice* entry, int type) {
 	char *returnString = malloc(120);;
 	if(type == 1) {
-		snprintf(returnString, 120, "      └───┴───┴───────────────┘");
+		snprintf(returnString, 120, "      └──────┴───────────────┘");
 	} else if (type == 2) {
 		snprintf(returnString, 120, "                               ");
 	} else {
-        snprintf(returnString, 120, "      │ %d │ \x1B[37;1m%c\x1B[0m │ %c %c %c %c %c %c %c │", entryNum, entry->sign, entry->signHistory[0], 
+        snprintf(returnString, 120, "      │ %d  \x1B[37;1m%c\x1B[0m │ %c %c %c %c %c %c %c │", entryNum, entry->sign, entry->signHistory[0], 
             entry->signHistory[1], entry->signHistory[2], entry->signHistory[3], entry->signHistory[4], 
             entry->signHistory[5], entry->signHistory[6]);
         shuffleSignData(entry);
@@ -143,16 +127,24 @@ char *levelData(displaySlice entry) {
 	return(returnString);
 }
 
-char *entrexitData(int entryNum, entrexitSlice entry, int type) {
+char *entrexitData(int entryNum, entrexitSlice entry, int type, bool isEntrance) {
 	char *returnString = malloc(120);;
 	if(type == 1) {
-		snprintf(returnString, 120, " └───┴─────────┴────────┴─────────┘");
+        if(isEntrance) {
+            snprintf(returnString, 120, " └───┴─────────┴────────┴─────────┘");
+        } else {
+            snprintf(returnString, 120, " └───┴─────────┴────────┘         ");
+        }
 	} else if (type == 2) {
 		snprintf(returnString, 120, "                                   ");
 	} else {
         char *boolf = boolFormat(entry.valid);
         char *boomf = boomFormat(entry.boom);
-        snprintf(returnString, 120, " │ %d │ %s │  %s │   %s   │", entryNum, entry.plate, boolf, boomf);
+        if(isEntrance) {
+            snprintf(returnString, 120, " │ %d │ %s  │  %s │  %s │", entryNum, entry.plate, boomf, boolf);
+        } else {
+            snprintf(returnString, 120, " │ %d │ %s  │  %s │", entryNum, entry.plate, boomf);
+        }
     }
 	return(returnString);
 
@@ -190,9 +182,9 @@ char *printSlice(displaySlice entry) {
         exitmode = 0;
 	};
 	char *level = levelData(entry);
-	char *entryData = entrexitData(entry.entry, entry.entrance, entrymode);
-	char *exitData = entrexitData(entry.entry, entry.exit, exitmode);
-	snprintf(returnString, 320, "%s%s%s\n", level, entryData, exitData);
+	char *entryData = entrexitData(entry.entry, entry.entrance, entrymode, true);
+	char *exitData = entrexitData(entry.entry, entry.exit, exitmode, false);
+	snprintf(returnString, 320, "    %s%s %s\n", level, entryData, exitData);
 
 	return returnString;
 
@@ -229,10 +221,61 @@ char *printLowerSlice(displayMonolith* monolith, int level) {
 	char *entryData = signData(monolith->level[level].entry, &(&(monolith->level)[level])->entrance, entrymode);
 	char *exitData = signData(monolith->level[level].entry, &(&(monolith->level)[level])->exit, exitmode);
     char *moneyData = revenueData(monolith->dollars, monolith->cents, revenuemode);
-	snprintf(returnString, 320, "%s     %s    %s\n", moneyData, entryData, exitData);
+	snprintf(returnString, 320, "    %s     %s      %s\n", moneyData, entryData, exitData);
 
 	return returnString;
 
+}
+
+// Print an instance of a monolith struct - displaying the entire system's data.
+void printMonolith(displayMonolith *monolith) {
+	long ns;
+	struct timespec spec;
+	clock_gettime(CLOCK_MONOTONIC, &spec);
+	ns = spec.tv_nsec;
+
+	char *header = headerDraw();
+	char *headerLower = headerLowerDraw();
+    displaySlice blankSlice = {6};
+
+	char *returnString = malloc(sizeof(char) * 4 * 100 * 24);
+    char *slice;
+
+
+    strcat(returnString, header);
+
+    for (size_t i = 0; i < LEVELS + 1; i++)
+    {
+        slice = printSlice(monolith->level[i]);
+        strcat(returnString, slice);
+        free(slice);
+    }
+    
+    strcat(returnString, headerLower);
+    
+    for (size_t i = 0; i < fmax(ENTRANCES, EXITS) + 1; i++)
+    {
+        slice = printLowerSlice(monolith, i);
+        strcat(returnString, slice);
+        free(slice);
+    }
+
+    //system("clear");
+    //
+    printf("\033[2J%s\n\n\n\n\n\n", returnString); // more optimised version of system("clear");
+
+    //printf("\n %p \n", (void *)&returnString); // print string pointer
+	//free(returnString);  // not needed apparently
+    //strcpy(returnString, " "); // also it breaks it so-
+    
+    clock_gettime(CLOCK_MONOTONIC, &spec);
+	
+	ns = abs(floor((spec.tv_nsec - ns) / 1.0e6));
+	if (ns > 500) {
+		ns = 1000-ns;
+	}
+	printf("\n internal time: %3ld milliseconds\n", ns);
+	nanosleep((const struct timespec[]){{0, 200000000L}}, NULL); //0
 }
 
 
@@ -292,56 +335,6 @@ void genarateRandomLicense(int argc, char **argv) {
 
 
 
-void printMonolith(displayMonolith *monolith) {
-	long ns;
-	struct timespec spec;
-	clock_gettime(CLOCK_MONOTONIC, &spec);
-	ns = spec.tv_nsec;
-
-	char *header = headerDraw();
-	char *headerLower = headerLowerDraw();
-    displaySlice blankSlice = {6};
-
-	char *returnString = malloc(sizeof(char) * 4 * 100 * 24);
-    char *slice;
-
-
-    strcat(returnString, header);
-
-    for (size_t i = 0; i < LEVELS + 1; i++)
-    {
-        slice = printSlice(monolith->level[i]);
-        strcat(returnString, slice);
-        free(slice);
-    }
-    
-    strcat(returnString, headerLower);
-    
-    for (size_t i = 0; i < fmax(ENTRANCES, EXITS) + 1; i++)
-    {
-        slice = printLowerSlice(monolith, i);
-        strcat(returnString, slice);
-        free(slice);
-    }
-
-    //system("clear");
-    printf("\033[2J%s\n\n\n\n\n\n\n", returnString); // more optimised version of system("clear");
-    //printf("\n %p \n", (void *)&returnString); // print string pointer
-	//free(returnString);  // not needed apparently
-    //strcpy(returnString, " "); // also it breaks it so-
-    
-    clock_gettime(CLOCK_MONOTONIC, &spec);
-	
-	ns = abs(floor((spec.tv_nsec - ns) / 1.0e6));
-	if (ns > 500) {
-		ns = 1000-ns;
-	}
-	printf("\n internal time: %3ld milliseconds\n", ns);
-	nanosleep((const struct timespec[]){{0, 20000000L}}, NULL);
-}
-
-
-
 
 int allowedList(int argc, char const *argv[]) 
 { 
@@ -385,10 +378,14 @@ int bannedList(){
 	} 
 }
 
+void testFunction (displayMonolith *monolith) {
+    (&(&(monolith)->level[0])->entrance)->plate = "AAAAAA";
+}
+
 int main()
 {
-    entrexitSlice entery = {"XXX-000", false, true, 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
-    entrexitSlice exity = {"000-000", true, false, 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
+    entrexitSlice entery = {"XXX000", true, 'C', 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
+    entrexitSlice exity = {"000000", false, 'O', 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
     displaySlice level1 = {1, 0.5, 16, 20, entery, exity};
     displaySlice level2 = {2, 0.5, 16, 20, entery, exity};
     displaySlice level3 = {3, 0.5, 16, 20, entery, exity};
@@ -397,7 +394,7 @@ int main()
     displaySlice blanker = {6};
     displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}};
 
-    (&(&(&monolith)->level[0])->entrance)->plate = "AAA-AAA";
+    testFunction(&monolith);
     
 
     while(true) {
@@ -405,9 +402,15 @@ int main()
         {
             (&(&(&monolith)->level[i])->entrance)->sign = "                            ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 100];
             (&(&(&monolith)->level[i])->exit)->sign = "                            ABCDEFGHIJKLMNOPQRSTUVWXYZqwertyuiopasdfghjklzxcvbnm12345678901234567890"[random () % 100];
+
+            (&(&(&monolith)->level[i])->entrance)->boom = "COLR"[random () % 4];
+            (&(&(&monolith)->level[i])->exit)->boom = "COLR"[random () % 4];
+
+            (&(&(&monolith)->level[i])->entrance)->valid = random() % 2;
+            (&(&(&monolith)->level[i])->exit)->valid = random() % 2;
         }
 
-        
+        //printf("%c", (&(&(&monolith)->level[0])->entrance)->boom);
         printMonolith(&monolith);
     }
 

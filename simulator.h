@@ -37,7 +37,7 @@
 typedef struct {
 	char* plate;
 	bool valid;
-	bool boom;
+	char boom;
 	char sign;
     char signHistory[7];
 } entrexitSlice;
