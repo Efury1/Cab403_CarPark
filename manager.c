@@ -324,10 +324,11 @@ void printMonolith(displayMonolith *monolith) {
         free(slice);
     }
 
-    system("clear");
-    printf("%s", returnString);
-    printf("\n %p \n", (void *)&returnString);
+    //system("clear");
+    printf("\033[2J%s\n\n\n\n\n\n\n", returnString); // more optimised version of system("clear");
+    //printf("\n %p \n", (void *)&returnString); // print string pointer
 	//free(returnString);  // not needed apparently
+    //strcpy(returnString, " "); // also it breaks it so-
     
     clock_gettime(CLOCK_MONOTONIC, &spec);
 	
