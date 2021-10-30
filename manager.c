@@ -392,7 +392,7 @@ int main()
     displaySlice level4 = {4, 0.5, 16, 20, entery, exity};
     displaySlice level5 = {5, 0.5, 16, 20, entery, exity};
     displaySlice blanker = {6};
-    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}};
+    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}, false};
 
     testFunction(&monolith);
     
