@@ -18,6 +18,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <string.h>
+#include <inttypes.h>
 
 //calling in the .h file 
 /*#include "car_park.h"*/
@@ -278,8 +279,43 @@ void printMonolith(displayMonolith *monolith) {
 	nanosleep((const struct timespec[]){{0, 200000000L}}, NULL); //0
 }
 
+int64_t timespecDiff(struct timespec *time_a, struct timespec *time_b)
+{
+  return (((time_a->tv_sec * 1000000000) + time_a->tv_nsec) -
+           ((time_b->tv_sec * 1000000000) + time_b->tv_nsec) ) / 1e6;
+}
 
-
+void *makeCar(carPark *parking, char plate[6], int level) {
+    carHolder *p = malloc(sizeof(carHolder));
+    if (p == NULL) {
+        printf("Failed to allocate.\n");
+    }
+    car *newCar = malloc(sizeof(car));
+    struct timespec end_test;
+    strcpy((newCar->plate), plate);
+    newCar->level = level;
+    clock_gettime(CLOCK_MONOTONIC, &(newCar->entryTime));
+    p->node = newCar;
+    if (parking->list == NULL) {
+        p->next = NULL;
+        parking->list = p;
+    } else {
+        p->next = parking->list;
+        parking->list = p;
+    }
+    sleep(1);
+    clock_gettime(CLOCK_MONOTONIC, &end_test);
+    uint64_t timeElapsed = timespecDiff(&end_test, &(newCar->entryTime));
+    printf("%" PRIu64 "\n", timeElapsed);
+}
+/*
+carHolder *insertNode(carHolder *head, char plate[6], int level) {
+    carHolder *p = makeCar(plate, level);
+    if (p == NULL) {
+        printf("Failed to allocate.");
+    }
+    
+}*/
 
 char* ReadFile(char *filename)
 {
@@ -382,8 +418,21 @@ void testFunction (displayMonolith *monolith) {
     (&(&(monolith)->level[0])->entrance)->plate = "AAAAAA";
 }
 
+void simulator (void) {
+
+    carPark *parking = malloc(sizeof(carPark));
+    char *plate = "abb397";
+    char *plate2 = "abb037";
+    makeCar(parking, plate, 2);
+    makeCar(parking, plate2, 2);
+    printf("\n%s\n", parking->list->node->plate);
+    printf("\n%s\n", parking->list->next->node->plate);
+
+}
+
 int main()
 {
+
     entrexitSlice entery = {"XXX000", true, 'C', 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
     entrexitSlice exity = {"000000", false, 'O', 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
     displaySlice level1 = {1, 0.5, 16, 20, entery, exity};
@@ -409,9 +458,9 @@ int main()
             (&(&(&monolith)->level[i])->entrance)->valid = random() % 2;
             (&(&(&monolith)->level[i])->exit)->valid = random() % 2;
         }
-
+        simulator();
         //printf("%c", (&(&(&monolith)->level[0])->entrance)->boom);
-        printMonolith(&monolith);
+        //printMonolith(&monolith);
     }
 
 /*

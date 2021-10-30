@@ -60,12 +60,23 @@ typedef struct {
 
 
 /*Prototypes */
-typedef struct car {
-	  char plate[6];
-	  int level;
-}car_t;
 
+typedef struct {
+	char plate[7];
+	int level;
+	struct timespec entryTime;
+} car;
 
+typedef struct carHolder carHolder;
+
+struct carHolder {
+	car *node;
+	carHolder *next;
+};
+
+typedef struct {
+	carHolder *list;
+} carPark;
 
 
 
