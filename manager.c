@@ -46,7 +46,10 @@ void polarity(int isPositive) {
     }
 }
 
+/* Drawing Functions */
+
 void spinner(void) {
+    // Spinner function - nonfunctional but aim is to have a loading icon with state.
     system("clear");
     polarity(1);
     printf("%-07s%-97s\n", spinnerStrings[0], "Loading...");
@@ -54,6 +57,7 @@ void spinner(void) {
 }
 
 char* boolFormat(bool value) {
+    // Formats a Boolean to a string os 'Yes' or 'No' for nice display. Also adds colour!
 	char *returnString;
 	if(value) {
 		returnString = "\x1B[32mYes Y\x1B[0m ";
@@ -64,6 +68,7 @@ char* boolFormat(bool value) {
 };
 
 char* boomFormat(char value) {
+    // Formats a boom 'char' sign to a nicer display of it's state.
 	char *returnString;
 
     if(value == 'C') {
@@ -82,16 +87,19 @@ char* boomFormat(char value) {
 };
 
 char *headerDraw(void) {
+    // Draws the first line of headers.
 	return("\n      level data                  entrances                           exits\n"
 	"     ┌╼#╾┬─╼Temp╾─┬─╼Parking╾─┐  ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┬─╼Valid╾─┐  ┌╼#╾┬─╼Plate╾─┬─╼Boom╾─┐\n");
 }
 
 char *headerLowerDraw(void) {
+    // Draws the second line of headers.
 	return("\n      revenue                     entrance signs                      exit signs\n"
 	"     ┌╼$╾────────────┐           ┌╼#╾╼*╾┬───╼History╾───┐            ┌╼#╾╼*╾┬───╼History╾───┐\n");
 }
 
 void shuffleSignData(entrexitSlice* entry) {
+    // Moves the sign history data down by a blip.
     for (int i = 5; i >= 0; i--)
     {
         //printf("%d: %c -> %d: %c\n", i, entry->signHistory[i], i+1, entry->signHistory[i+1]); 
@@ -102,6 +110,7 @@ void shuffleSignData(entrexitSlice* entry) {
 }
 
 char *signData(int entryNum, entrexitSlice* entry, int type) {
+    // Displays the sign data in a bounded box.
 	char *returnString = malloc(120);;
 	if(type == 1) {
 		snprintf(returnString, 120, "      └──────┴───────────────┘");
@@ -117,18 +126,20 @@ char *signData(int entryNum, entrexitSlice* entry, int type) {
 }
 
 char *levelData(displaySlice entry) {
+    // Displays the level data (temperature, car num, capacity) in a bounded box.
 	char *returnString = malloc(120);;
 	if(entry.entry == LEVELS + 1) {
 		snprintf(returnString, 120, " └───┴────────┴───────────┘ ");
 	} else if (entry.entry > LEVELS + 1) {
 		snprintf(returnString, 120, "                            ");
 	} else {
-        snprintf(returnString, 120, " │ %d │ %5.2fc │   %2d/%2d   │ ", entry.entry, entry.temp, entry.cars, entry.capacity);
+        snprintf(returnString, 120, " │ %d │ %5.2fc │   %2d/%2d   │ ", entry.entry, entry.temp, entry.cars, PARKS);
     }
 	return(returnString);
 }
 
 char *entrexitData(int entryNum, entrexitSlice entry, int type, bool isEntrance) {
+    // Displays entry and exit LPR data.
 	char *returnString = malloc(120);;
 	if(type == 1) {
         if(isEntrance) {
@@ -152,6 +163,7 @@ char *entrexitData(int entryNum, entrexitSlice entry, int type, bool isEntrance)
 }
 
 char *revenueData(int dollars, int cents, int type) {
+    // Displays the dollars and cents value of the system.
 	char *returnString = malloc(120);;
 	if(type == 1) {
 		snprintf(returnString, 120, " └───────────────┘");
@@ -165,6 +177,7 @@ char *revenueData(int dollars, int cents, int type) {
 }
 
 char *printSlice(displaySlice entry) {
+    // Creates one line of the upper section of the display.
 	char *returnString = malloc(320);;
 	int entrymode;
 	int exitmode;
@@ -192,6 +205,7 @@ char *printSlice(displaySlice entry) {
 }
 
 char *printLowerSlice(displayMonolith* monolith, int level) {
+    // Creates one line of the lower section of the display.
 	char *returnString = malloc(320);;
 	int entrymode;
 	int exitmode;
@@ -228,8 +242,8 @@ char *printLowerSlice(displayMonolith* monolith, int level) {
 
 }
 
-// Print an instance of a monolith struct - displaying the entire system's data.
 void printMonolith(displayMonolith *monolith) {
+    // Print an instance of a monolith struct - displaying the entire system's data.
 	long ns;
 	struct timespec spec;
 	clock_gettime(CLOCK_MONOTONIC, &spec);
@@ -279,13 +293,16 @@ void printMonolith(displayMonolith *monolith) {
 	nanosleep((const struct timespec[]){{0, 200000000L}}, NULL); //0
 }
 
-int timespecDiff(struct timespec *time_a, struct timespec *time_b)
-{
-  return (((time_a->tv_sec * 1000000000) + time_a->tv_nsec) -
+/* Manager / Simulator Functions */
+
+int timespecDiff(struct timespec *time_a, struct timespec *time_b) {
+    // returns the time diff between two timespecs, in milliseconds.
+    return (((time_a->tv_sec * 1000000000) + time_a->tv_nsec) -
            ((time_b->tv_sec * 1000000000) + time_b->tv_nsec) ) / 1e6;
 }
 
 void *makeCar(carPark *parking, char plate[6], int level) {
+    // Make a car and add it to the parking object provided.
     carHolder *p = malloc(sizeof(carHolder));
     if (p == NULL) {
         printf("Failed to allocate.\n");
@@ -305,7 +322,7 @@ void *makeCar(carPark *parking, char plate[6], int level) {
 }
 
 void charge (car *carToCharge) {
-
+    // Finds how long a car has existed, and charge it based upon that.
     struct timespec end_test;
     char *toPrint;
     int dollars;
@@ -320,6 +337,7 @@ void charge (car *carToCharge) {
 }
 
 bool checkIfInFile (char *plateToCheck) {
+    // Checks if a car is in plates.txt. (Candidate for threading?)
     char plate[8];
     FILE *filePlates = fopen("plates.txt", "r");
     //printf("File Opened.\n\n");
@@ -397,16 +415,17 @@ char* ReadFile(char *filename)
     return buffer;
 }
 
-void genarateRandomLicense(int argc, char **argv) {
+char* genarateRandomLicense(void) {
 
-	for(int x; x < 10; x++) {
-		char plate[6];
-		for(int i = 0; i < 3; i++) {
-			plate[i] = (char)(48 + (rand() % 10));
-			plate[i+3] =  (char)(65 + (rand() % 26));
-		}		
-		printf("%s\n",plate);
-	}
+    char plateC[6];
+    char *plate = malloc(7);
+    for(int i = 0; i < 3; i++) {
+        plateC[i] = (char)('0' + (rand() % 10));
+        plateC[i+3] =  (char)('A' + (rand() % 26));
+    }	
+    snprintf(plate, 6, "%s", plateC);
+    //printf("%s\n\n", plate);
+    return plate;
 }
 
 
@@ -439,7 +458,6 @@ int allowedList(int argc, char const *argv[])
 } 
 
 
-
 int bannedList(){      
     int i=0;
     char plates[30][7];//declaration of array       
@@ -455,22 +473,60 @@ int bannedList(){
 }
 
 void testFunction (displayMonolith *monolith) {
+    // This is how you set the license plate to display, etc.
     (&(&(monolith)->level[0])->entrance)->plate = "AAAAAA";
 }
 
+/* Unfinished */
+
+void deleteCar (carPark *parking, carHolder *carToChange) {
+    // Deletes a car from the parking object provided.
+    // Working! :D
+    struct carHolder *previous = parking->list;
+    struct carHolder *temp;
+    if(parking->list == carToChange) {
+        //printf("\n\nfirst car\n");
+        parking->list->next = carToChange->next;
+        free(carToChange->node);
+    } else {
+        //printf("\n\nnot the first car,/n");
+        temp = parking->list;
+        while (temp->next != NULL) {
+            //printf("\nP: %s\n", temp->next->node->plate);
+            if(temp->next == carToChange) {
+                printf("other car!\n\n", temp->next->node->plate);
+                temp->next->next = carToChange->next;
+                free(carToChange);
+                return;
+            }
+            //printf("not this car,\n\n");
+            temp = temp->next;
+        }
+        //printf("not found\n\n");
+        return;
+    }
+    
+}
+
 void simulator (void) {
+    // Here's where the simulator files would go.
 
     carPark *parking = malloc(sizeof(carPark));
     char *plate = "abb397";
     char *plate2 = "abb037";
-    makeCar(parking, plate, 2);
+    char *plate3 = "right";
+    makeCar(parking, plate3, 2);
     makeCar(parking, plate2, 2);
-    //printf("\n%s\n", parking->list->node->plate);
+    makeCar(parking, plate, 2);
+    //printf("\nPlate: %s\n", parking->list->node->plate);
     //printf("\n%s\n", parking->list->next->node->plate);
     if(checkIfInFile(parking->list->node->plate)) {
         printf("match\n");
     };
 
+    printf("%s\n", genarateRandomLicense());
+    printf("%s\n", genarateRandomLicense());
+    deleteCar(parking, parking->list->next->next);
     while(true) {
         sleep(2);
         charge(parking->list->node);
@@ -479,9 +535,22 @@ void simulator (void) {
 
 }
 
-int main()
-{
+// Entry LPR:
+// Generate a random numberplate
+// Check if in plates.txt with checkIfInFile
+//  if so, set valid to yes, then check if there's an 'entry < parks' in monolith->level
+//   if so, set the gates to o, then run makeCar to add it. set entrance->sign to the level the car's being added to.
+// if not in plates.txt (set valid to false), or carpark is full, set boom gates to c
 
+// Exit LPR:
+// Lift gates
+// Bill car.
+// Increase capacity of the car's level by 1. (monolith->levels->cars)
+// Delete car.
+// Lower gates
+
+int main() {
+    // Main function
     entrexitSlice entery = {"XXX000", true, 'C', 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
     entrexitSlice exity = {"000000", false, 'O', 'H', {' ', ' ', ' ', ' ', ' ', ' ', ' '}};
     displaySlice level1 = {1, 0.5, 16, 20, entery, exity};
@@ -490,9 +559,7 @@ int main()
     displaySlice level4 = {4, 0.5, 16, 20, entery, exity};
     displaySlice level5 = {5, 0.5, 16, 20, entery, exity};
     displaySlice blanker = {6};
-    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}, false};
-
-    testFunction(&monolith);
+    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}, false, NULL, 0};
     
 
     simulator();
@@ -510,7 +577,7 @@ int main()
             (&(&(&monolith)->level[i])->exit)->valid = random() % 2;
         }
         //printf("%c", (&(&(&monolith)->level[0])->entrance)->boom);
-        //printMonolith(&monolith);
+        printMonolith(&monolith);
     }
 
 /*
