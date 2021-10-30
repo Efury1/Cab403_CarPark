@@ -319,7 +319,7 @@ void charge (car *carToCharge) {
     fclose(fileBill);
 }
 
-bool checkIfInFile (car *carToCheck) {
+bool checkIfInFile (char *plateToCheck) {
     char plate[8];
     FILE *filePlates = fopen("plates.txt", "r");
     //printf("File Opened.\n\n");
@@ -332,7 +332,7 @@ bool checkIfInFile (car *carToCheck) {
         for (size_t i = 0; i < 6; i++)
         {
             //printf("%d\n", i);
-            if(carToCheck->plate[i] != plate[i]) {
+            if(plateToCheck[i] != plate[i]) {
                 i = 7;
             }
             if(i == 5) {
@@ -467,7 +467,9 @@ void simulator (void) {
     makeCar(parking, plate2, 2);
     //printf("\n%s\n", parking->list->node->plate);
     //printf("\n%s\n", parking->list->next->node->plate);
-    checkIfInFile(parking->list->node);
+    if(checkIfInFile(parking->list->node->plate)) {
+        printf("match\n");
+    };
 
     while(true) {
         sleep(2);
