@@ -57,6 +57,7 @@ typedef struct {
     displaySlice level[6];
 	int evacuation;
 	int tick;
+	int ticksToSpawn;
 } displayMonolith;
 
 
@@ -65,6 +66,7 @@ typedef struct {
 typedef struct {
 	char plate[7];
 	int level;
+	int ticksToLive;
 	struct timespec entryTime;
 } car;
 
