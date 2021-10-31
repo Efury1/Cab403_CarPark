@@ -55,9 +55,8 @@ typedef struct {
     int dollars;
     int cents;
     displaySlice level[6];
-	bool evacuation;
-	char *available[7];
-	int availableCount;
+	int evacuation;
+	int tick;
 } displayMonolith;
 
 
