@@ -257,29 +257,30 @@ void setEvacuation (displayMonolith *monolith, bool val) {
 
 void testFunc(displayMonolith *monolith, carPark *parking) {
 
-    if(monolith->tick < 140) {
-        if(monolith->tick == 5) {
+    if(monolith->tick < 200) {
+        if(monolith->tick == 40) {
             setEvacuation(monolith, true);
-        } else if (monolith->tick == 15) {
+        } else if (monolith->tick == 60) {
             setEvacuation(monolith, false);
         } else if (monolith->tick % 2 == 1) {
             Entry_LPR(monolith, parking);
         } if (monolith->tick % 3 == 1 && monolith->tick > 90) {
             Exit_LPR(monolith, parking);
         }
-    }
+    } else {
 
-    if (monolith->tick % 2 == 1) {
-        Entry_LPR(monolith, parking);
-    }
-    
-    if (monolith->tick % 3 == 1) {
-        Exit_LPR(monolith, parking);
-    }
-    
+        if (monolith->tick % 2 == 1) {
+            Entry_LPR(monolith, parking);
+        }
+        
+        if (monolith->tick % 6 == 1) {
+            Exit_LPR(monolith, parking);
+        }
+        
 
-    if (monolith->evacuation > 0) {
-        Exit_LPR(monolith, parking);
+        if (monolith->evacuation > 0) {
+            Exit_LPR(monolith, parking);
+        }
     }
 }
 
@@ -356,6 +357,7 @@ void printMonolith(displayMonolith *monolith) {
     displaySlice blankSlice = {6};
 
 	char *returnString = malloc(sizeof(char) * 4 * 100 * 24);
+    memset(returnString, 0, sizeof(char) * 4 * 100 * 24);
     char *slice;
 
 
@@ -425,7 +427,7 @@ void *makeCar(carPark *parking, char plate[7], int level) {
     }
 }
 
-void charge (car *carToCharge) {
+void charge (car *carToCharge, displayMonolith *monolith) {
     // Finds how long a car has existed, and charge it based upon that.
     struct timespec end_test;
     char *toPrint;
@@ -435,6 +437,12 @@ void charge (car *carToCharge) {
     int timeElapsed = timespecDiff(&end_test, &(carToCharge->entryTime));
     dollars = (int)((timeElapsed*0.05)/100);
     cents = (int)fmod((timeElapsed*0.05), 100);
+    monolith->dollars += dollars;
+    if(cents + monolith->cents > 100) {
+        monolith->cents += cents - 100;
+    } else {
+        monolith->cents += cents;
+    }
     FILE *fileBill = fopen("billing.txt", "a");
     fprintf(fileBill, "%s: $%d.%d\n", carToCharge->plate, dollars, cents);
     fclose(fileBill);
@@ -465,7 +473,7 @@ bool checkIfInFile (char *plateToCheck) {
         }
         
     }
-    printf("File Closed.\n");
+    //printf("File Closed.\n");
     return false;
 
 }
@@ -646,7 +654,7 @@ void Exit_LPR (displayMonolith *monolith, carPark *parking) {
     (&(&(monolith)->level[exit])->exit)->sign = '1' + temp->node->level;
     (&(&(monolith)->level[exit])->exit)->plate = temp->node->plate;
 
-    charge(temp->node);
+    charge(temp->node, monolith);
     deleteCar(parking, temp);
 }
 
@@ -655,33 +663,47 @@ void Entry_LPR (displayMonolith *monolith, carPark *parking) {
     int entrance = random () % ENTRANCES;
     char plate[7] = {'a', ' ', ' ', ' ', ' ', ' ', '\0'};
     char plateF[8];
+    int fileLength = 0;
+    int coinFlip = random() % 2;
 
-    /*
-    for(int i = 0; i < 3; i++) {
-        plate[i] = (char)('0' + (rand() % 10));
-        plate[i+3] =  (char)('A' + (rand() % 26));
-    }
-    */
-
-    FILE *filePlates = fopen("plates.txt", "r");
-    //printf("File Opened.\n\n");
-    if (filePlates == NULL) {
-        return;
-    }
-
-    while(fgets(plateF, 8, filePlates) != NULL) {
-        //printf("%s\n", plate);
-        for (size_t i = 0; i < 6; i++)
-        {
-            plate[i] = plateF[i];
+    if(coinFlip == 1) {
+        for(int i = 0; i < 3; i++) {
+                plate[i] = (char)('0' + (rand() % 10));
+                plate[i+3] =  (char)('A' + (rand() % 26));
+            }
+    } else {
+        FILE *filePlates = fopen("plates.txt", "r");
+        //printf("File Opened.\n\n");
+        if (filePlates == NULL) {
+            return;
         }
         
+        while(fgets(plateF, 8, filePlates) != NULL) {
+            if(plateF != "\n") {
+                fileLength++;
+            }
+        }/**/
+        fseek(filePlates, 0, SEEK_SET);
+
+        for (size_t i = 0; i < rand() % (fileLength-1); i++) {
+            //printf("%s\n", plate);
+            fgets(plateF, 8, filePlates);
+            for (size_t x = 0; x < 6; x++)
+            {
+                plate[x] = plateF[x];
+            }
+            
+        }
     }
+    
+
+    ////
     
     if(monolith->evacuation) {
         return;
     }
-    //if(checkIfInFile(plate)) {
+    //
+    if(checkIfInFile(plate)) {
         (&(&(monolith)->level[entrance])->entrance)->valid = true;
         for (size_t i = 0; i < LEVELS; i++) {
             if ((&(monolith)->level[i])->cars < PARKS) {
@@ -708,9 +730,12 @@ void Entry_LPR (displayMonolith *monolith, carPark *parking) {
         }
         //printf("match\n");
         //testFunction(monolith);
-    //} else {
-    //    (&(&(monolith)->level[entrance])->entrance)->valid = false;
-    //};
+    } else {
+        (&(&(monolith)->level[entrance])->entrance)->valid = false;
+        if((&(&(monolith)->level[entrance])->entrance)->boom != 'C') {
+            (&(&(monolith)->level[entrance])->entrance)->boom = 'L';
+        }
+    };
 }
 
 void simulator (displayMonolith *monolith, carPark *parking) {
@@ -757,7 +782,7 @@ int main() {
     displaySlice level4 = {4, 0.5, 0, PARKS, entery, exity};
     displaySlice level5 = {5, 0.5, 0, PARKS, entery, exity};
     displaySlice blanker = {6};
-    displayMonolith monolith = {2765, 84, {level1, level2, level3, level4, level5, blanker}, 0, 0};
+    displayMonolith monolith = {0, 0, {level1, level2, level3, level4, level5, blanker}, 0, 0};
     //setEvacuation(&monolith, true);
     
     carPark *parking = malloc(sizeof(carPark));
